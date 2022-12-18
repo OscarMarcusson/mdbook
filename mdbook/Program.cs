@@ -188,6 +188,44 @@ namespace mdbook
 							}
 						}
 
+						// Table
+						else if(trimmed.StartsWith("|") && trimmed.EndsWith("|"))
+						{
+							builder.AppendLine("<table>");
+							var rows = new List<string[]>();
+							for(int n = i; n < lines.Length; n++)
+							{
+								trimmed = lines[n].Trim();
+								if (!trimmed.StartsWith('|'))
+								{
+									i = n - 1;
+									break;
+								}
+								rows.Add(trimmed.Substring(1, trimmed.Length-2).Trim().Split('|').Select(x => ParseText(x.Trim())).ToArray());
+							}
+
+							var alignments = rows.Count >= 2 && rows[1].All(x => x.Contains("---")) ? rows[1] : null;
+							var hasHeaders = alignments?.Length > 0;
+
+							if (hasHeaders)
+							{
+								builder.Append("<tr>");
+								foreach(var header in rows[0])
+									builder.Append($"<th>{header}</th>");
+								builder.AppendLine("</tr>");
+							}
+
+							for(int n = hasHeaders ? 2 : 0; n < rows.Count; n++)
+							{
+								builder.Append("<tr>");
+								foreach (var cell in rows[n])
+									builder.Append($"<td>{cell}</td>");
+								builder.AppendLine("</tr>");
+							}
+
+							builder.AppendLine("</table>");
+						}
+
 						// Blockquote (>)
 						else if (trimmed.StartsWith(">"))
 						{
