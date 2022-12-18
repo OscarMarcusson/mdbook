@@ -129,9 +129,62 @@ namespace mdbook
 
 		static string GetContent(string sourceFolder, string sourceFile)
 		{
+			var builder = new StringBuilder();
 			var files = Directory.GetFiles(sourceFolder, sourceFile);
+			
+			foreach(var filePath in files)
+			{
+				var lines = File.ReadAllLines(filePath);
+				for(int i = 0; i < lines.Length; i++)
+				{
+					var trimmed = lines[i].Trim();
+					if(trimmed.Length > 0)
+					{
+						// Header (#)
+						if (trimmed.StartsWith("#"))
+						{
+							var headerSize = 1;
+							for(int n = 1; n < trimmed.Length; n++)
+							{
+								if (trimmed[n] == '#')
+								{
+									headerSize++;
+									continue;
+								}
 
-			return "<p>Test</p>";
+								trimmed = trimmed.Substring(n).TrimStart();
+								builder.AppendLine($"<h{headerSize}>{trimmed}</h{headerSize}>");
+								break;
+							}
+						}
+
+						// Blockquote (>)
+						else if (trimmed.StartsWith(">"))
+						{
+							var allContent = new List<string>();
+							for(int n = i; i < lines.Length; n++)
+							{
+								trimmed = lines[n].Trim();
+								if (!trimmed.StartsWith(">"))
+									break;
+
+								trimmed = trimmed.Substring(1).TrimStart();
+								if(trimmed.Length > 0)
+									allContent.Add(trimmed);
+								i = n;
+							}
+							builder.AppendLine($"<blockquote><p>{string.Join("</p><p>", allContent)}</p></blockquote>");
+						}
+
+						// Normal text
+						else
+						{
+							builder.AppendLine($"<p>{trimmed}</p>");
+						}
+					}
+				}
+			}
+			return builder.ToString();
 		}
 
 		static string StripCSS(string file)
