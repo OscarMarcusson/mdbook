@@ -60,7 +60,7 @@ namespace mdbook
 						break;
 
 					var indexAfterMatch = index + keyPair.Key.Length;
-					if (indexAfterMatch > raw.Length || (char.IsLetterOrDigit(raw[indexAfterMatch]) || raw[indexAfterMatch] == '_'))
+					if (indexAfterMatch >= raw.Length || (char.IsLetterOrDigit(raw[indexAfterMatch]) || raw[indexAfterMatch] == '_'))
 					{
 						var remaining = indexAfterMatch > raw.Length ? "" : raw.Substring(indexAfterMatch);
 						index = indexAfterMatch;
