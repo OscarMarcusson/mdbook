@@ -131,7 +131,7 @@ namespace mdbook
 
 
 				var styling = styleFile != string.Empty
-					? $"<style>{StripCSS(styleFile)}</style>"
+					? $"<style>\n{StripCSS(styleFile)}</style>"
 					: ""
 					;
 
