@@ -209,7 +209,7 @@ namespace mdbook
 						// Page breaks
 						else if (trimmed.StartsWith("---"))
 						{
-							builder.AppendLine("<p style=\"page-break-after: always;\"></p>");
+							builder.AppendLine("<hr style=\"page-break-after: always;\">");
 						}
 
 						// Normal text
