@@ -177,6 +177,12 @@ namespace mdbook
 							builder.AppendLine($"<blockquote><p>{string.Join("</p><p>", allContent)}</p></blockquote>");
 						}
 
+						// Page breaks
+						else if (trimmed.StartsWith("---"))
+						{
+							builder.AppendLine("<p style=\"page-break-after: always;\"></p>");
+						}
+
 						// Normal text
 						else
 						{
