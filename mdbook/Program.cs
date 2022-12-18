@@ -28,11 +28,17 @@ namespace mdbook
 				var outputFile = "";
 				var styleFile = "";
 				var realtime = false;
+				var language = "";
 
 				for(var i = 0; i < args.Length; i++)
 				{
 					switch (args[i])
 					{
+						case "-l":
+						case "--language":
+							if (!TryGetValue(ref i, args, ref language, "Expected a language code")) return;
+							break;
+
 						case "-r":
 						case "--realtime":
 							if (realtime)
@@ -69,7 +75,10 @@ namespace mdbook
 				}
 
 				// Validate arguments
-				if(string.IsNullOrWhiteSpace(sourceFile) || (!Directory.Exists(sourceFile) && !File.Exists(sourceFile)))
+				if (string.IsNullOrWhiteSpace(language))
+					language = "EN";
+
+				if (string.IsNullOrWhiteSpace(sourceFile) || (!Directory.Exists(sourceFile) && !File.Exists(sourceFile)))
 				{
 					Error("Empty input");
 					return;
@@ -346,9 +355,11 @@ namespace mdbook
 			return output.ToString();
 		}
 
-		static bool TryGetPath(ref int i, string[] args, ref string value)
+		static bool TryGetPath(ref int i, string[] args, ref string value) => TryGetValue(ref i, args, ref value, "Expected a path after " + args[i]);
+
+		static bool TryGetValue(ref int i, string[] args, ref string value, string error)
 		{
-			if(value != string.Empty)
+			if (value != string.Empty)
 			{
 				Error($"Already set {args[i]}");
 				return false;
@@ -357,7 +368,7 @@ namespace mdbook
 			i++;
 			if (i >= args.Length)
 			{
-				Error("Expected a path after " + args[i-1]);
+				Error(error);
 				return false;
 			}
 
