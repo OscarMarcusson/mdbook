@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
 using System.Text;
-using static System.Net.Mime.MediaTypeNames;
+using static mdbook.ErrorHandler;
 
 namespace mdbook
 {
@@ -29,14 +29,20 @@ namespace mdbook
 				var styleFile = "";
 				var realtime = false;
 				var language = "";
+				var translationsFile = "";
 
-				for(var i = 0; i < args.Length; i++)
+				for (var i = 0; i < args.Length; i++)
 				{
 					switch (args[i])
 					{
 						case "-l":
 						case "--language":
 							if (!TryGetValue(ref i, args, ref language, "Expected a language code")) return;
+							break;
+
+						case "-t":
+						case "--translation":
+							if (!TryGetPath(ref i, args, ref translationsFile)) return;
 							break;
 
 						case "-r":
@@ -75,8 +81,20 @@ namespace mdbook
 				}
 
 				// Validate arguments
-				if (string.IsNullOrWhiteSpace(language))
-					language = "EN";
+				if(!Translations.TryLoad(translationsFile, out var translationError))
+				{
+					Error(translationError);
+					return;
+				}
+
+				if (!string.IsNullOrWhiteSpace(language))
+				{
+					if(!Translations.TrySetLanguage(language, out var setLanguageError))
+					{
+						Error(setLanguageError);
+						return;
+					}
+				}
 
 				if (string.IsNullOrWhiteSpace(sourceFile) || (!Directory.Exists(sourceFile) && !File.Exists(sourceFile)))
 				{
@@ -110,6 +128,8 @@ namespace mdbook
 				}
 
 				// Run program
+
+
 				var styling = styleFile != string.Empty
 					? $"<style>{StripCSS(styleFile)}</style>"
 					: ""
@@ -205,6 +225,8 @@ namespace mdbook
 
 		static string ParseText(string text)
 		{
+			text = Translations.Apply(text);
+
 			var output = new StringBuilder();
 			for(int i = 0; i < text.Length; i++)
 			{
@@ -314,9 +336,6 @@ namespace mdbook
 			return text.Substring(i);
 		}
 
-
-
-		static string CreateError(string e) => $"<span class=\"error\">Unexpected character: {e}</span>";
 
 		static string StripCSS(string file)
 		{
