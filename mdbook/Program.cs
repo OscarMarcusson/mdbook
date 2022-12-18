@@ -240,6 +240,27 @@ namespace mdbook
 						output.Append("</span>");
 						break;
 
+					case '*':
+						i++;
+						if (i >= text.Length)
+						{
+							output.Append(text[i - 1]);
+						}
+						else if (text[i] == '*')
+						{
+							i++;
+							output.Append("<b>");
+							output.Append(GetSection(text, ref i, "**"));
+							output.Append("</b>");
+						}
+						else
+						{
+							output.Append("<i>");
+							output.Append(GetSection(text, ref i, "**"));
+							output.Append("</i>");
+						}
+						break;
+
 					default:
 						output.Append(text[i]);
 						break;
@@ -259,6 +280,29 @@ namespace mdbook
 				output.Append(text[i]);
 			}
 			return output.ToString();
+		}
+
+		static string GetSection(string text, ref int i, string end)
+		{
+			var endIndex = i;
+			while (endIndex > -1)
+			{
+				endIndex = text.IndexOf(end, endIndex);
+				if (endIndex < 0)
+					return text.Substring(i);
+
+				if (text[endIndex - 1] == '\\')
+				{
+					endIndex += end.Length;
+					continue;
+				}
+
+				var content = text.Substring(i, endIndex - i);
+				i = endIndex + end.Length - 1;
+				return content;
+			}
+
+			return text.Substring(i);
 		}
 
 
