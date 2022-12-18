@@ -51,7 +51,30 @@ namespace mdbook
 				return raw;
 
 			foreach(var keyPair in currentTranslations)
-				raw = raw.Replace(keyPair.Key, keyPair.Value);
+			{
+				var index = 0;
+				while (true)
+				{
+					index = raw.IndexOf(keyPair.Key, index);
+					if (index < 0)
+						break;
+
+					var indexAfterMatch = index + keyPair.Key.Length;
+					if (indexAfterMatch > raw.Length || (char.IsLetterOrDigit(raw[indexAfterMatch]) || raw[indexAfterMatch] == '_'))
+					{
+						var remaining = indexAfterMatch > raw.Length ? "" : raw.Substring(indexAfterMatch);
+						index = indexAfterMatch;
+						continue;
+					}
+
+					var left = raw.Substring(0, index);
+					var right = raw.Substring(indexAfterMatch);
+
+					raw = $"{left}{keyPair.Value}{right}";
+
+					index += keyPair.Value.Length;
+				}
+			}
 			
 			return raw;
 		}
