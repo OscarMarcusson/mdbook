@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
 using System.Text;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace mdbook
 {
@@ -153,7 +154,7 @@ namespace mdbook
 								}
 
 								trimmed = trimmed.Substring(n).TrimStart();
-								builder.AppendLine($"<h{headerSize}>{trimmed}</h{headerSize}>");
+								builder.AppendLine($"<h{headerSize}>{ParseText(trimmed)}</h{headerSize}>");
 								break;
 							}
 						}
@@ -170,7 +171,7 @@ namespace mdbook
 
 								trimmed = trimmed.Substring(1).TrimStart();
 								if(trimmed.Length > 0)
-									allContent.Add(trimmed);
+									allContent.Add(ParseText(trimmed));
 								i = n;
 							}
 							builder.AppendLine($"<blockquote><p>{string.Join("</p><p>", allContent)}</p></blockquote>");
@@ -179,13 +180,84 @@ namespace mdbook
 						// Normal text
 						else
 						{
-							builder.AppendLine($"<p>{trimmed}</p>");
+							builder.AppendLine($"<p>{ParseText(trimmed)}</p>");
 						}
 					}
 				}
 			}
 			return builder.ToString();
 		}
+
+		static string ParseText(string text)
+		{
+			var output = new StringBuilder();
+			for(int i = 0; i < text.Length; i++)
+			{
+				switch (text[i])
+				{
+					case '\\':
+						i++;
+						if (i >= text.Length)
+							continue;
+
+						switch (text[i])
+						{
+							// Just ensure that we write the actual character
+							case '"':
+							case '\'':
+							case '{':
+							case '}':
+							case '(':
+							case ')':
+							case '[':
+							case ']':
+							case '>':
+							case '<':
+							case '`':
+							case '\\': output.Append(text[i]); break;
+
+							default:
+								output.Append(CreateError($"\\{text[i]}"));
+								break;
+						}
+						break;
+
+					case '"':
+						output.Append("<span class=\"quote\">\"");
+						output.Append(GetSection(text, ref i, '"'));
+						output.Append("\"</span>");
+						break;
+
+					case '`':
+						output.Append("<span class=\"code\">");
+						output.Append(GetSection(text, ref i, '`'));
+						output.Append("</span>");
+						break;
+
+					default:
+						output.Append(text[i]);
+						break;
+				}
+			}
+			return output.ToString();
+		}
+
+
+		static string GetSection(string text, ref int i, char end)
+		{
+			var output = new StringBuilder();
+			for (i++; i < text.Length; i++)
+			{
+				if (text[i] == end && text[i - 1] != '\\')
+					break;
+				output.Append(text[i]);
+			}
+			return output.ToString();
+		}
+
+
+
+		static string CreateError(string e) => $"<span class=\"error\">Unexpected character: {e}</span>";
 
 		static string StripCSS(string file)
 		{
