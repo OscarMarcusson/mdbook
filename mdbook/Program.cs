@@ -140,18 +140,18 @@ namespace mdbook
 				var name = "Test";
 
 				var builder = new StringBuilder();
-				builder.Append("<!DOCTYPE html>");
-				builder.Append("<html lang=\"en\">");
-				builder.Append("<head>");
-					builder.Append("<meta charset=\"UTF-8\">");
-					builder.Append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
-					builder.Append($"<title>{name}</title>");
-					builder.Append(styling);
-				builder.Append("</head>");
-				builder.Append("<body>");
-					builder.Append(content);
-				builder.Append("</body>");
-				builder.Append("</html>");
+				builder.AppendLine("<!DOCTYPE html>");
+				builder.AppendLine("<html lang=\"en\">");
+				builder.AppendLine("<head>");
+					builder.AppendLine("<meta charset=\"UTF-8\">");
+					builder.AppendLine("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
+					builder.AppendLine($"<title>{name}</title>");
+					builder.AppendLine(styling);
+				builder.AppendLine("</head>");
+				builder.AppendLine("<body>");
+					builder.AppendLine(content);
+				builder.AppendLine("</body>");
+				builder.AppendLine("</html>");
 				
 				File.WriteAllText(outputFile, builder.ToString());
 			}
@@ -368,7 +368,8 @@ namespace mdbook
 
 				// Add text as is
 				shouldAppendWhiteSpace = char.IsLetterOrDigit(raw[i]) || raw[i] == '_';
-				output.Append(raw[i]);
+				if (raw[i] == '}') output.AppendLine(raw[i].ToString());
+				else output.Append(raw[i]);
 			}
 
 			return output.ToString();
