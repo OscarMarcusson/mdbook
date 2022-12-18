@@ -161,8 +161,9 @@ namespace mdbook
 		{
 			var builder = new StringBuilder();
 			var files = Directory.GetFiles(sourceFolder, sourceFile);
-			
-			foreach(var filePath in files)
+			var articleLevel = 0;
+
+			foreach (var filePath in files)
 			{
 				var lines = File.ReadAllLines(filePath);
 				for(int i = 0; i < lines.Length; i++)
@@ -182,6 +183,14 @@ namespace mdbook
 									continue;
 								}
 
+								while(headerSize <= articleLevel)
+								{
+									builder.AppendLine("</article>");
+									articleLevel--;
+								}
+								articleLevel = headerSize;
+
+								builder.AppendLine($"<article class=\"a{articleLevel}\">");
 								trimmed = trimmed.Substring(n).TrimStart();
 								builder.AppendLine($"<h{headerSize}>{ParseText(trimmed)}</h{headerSize}>");
 								break;
@@ -257,6 +266,11 @@ namespace mdbook
 						}
 					}
 				}
+			}
+			while (articleLevel > 0)
+			{
+				builder.AppendLine("</article>");
+				articleLevel--;
 			}
 			return builder.ToString();
 		}
