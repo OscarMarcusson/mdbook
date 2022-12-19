@@ -13,11 +13,45 @@ namespace mdbook
 	{
 		static readonly Dictionary<string, Dictionary<string, string>> allTranslations = new Dictionary<string, Dictionary<string, string>>();
 		static Dictionary<string, string>? currentTranslations;
+		static string currentLanguageCode = "";
 		static bool hasTranslations = false;
+
+		public static bool ShouldInclude(string text, out string trimmed)
+		{
+			if(!text.StartsWith("@"))
+			{
+				trimmed = text;
+				return true;
+			}
+
+			var i = 1;
+			while (char.IsWhiteSpace(text[i])) i++;
+
+			var endIndex = text.IndexOf(':', i);
+			if(endIndex < 0)
+			{
+				trimmed = "";
+				return false;
+			}
+
+			var languageCode = text.Substring(i, endIndex - i);
+			if(languageCode.Equals(currentLanguageCode, StringComparison.OrdinalIgnoreCase))
+			{
+				trimmed = text.Substring(endIndex+1).TrimStart();
+				return true;
+			}
+			else
+			{
+				trimmed = "";
+				return false;
+			}
+		}
 
 		public static bool TrySetLanguage(string languageCode, out string error)
 		{
-			if(!hasTranslations)
+			currentLanguageCode = languageCode;
+
+			if (!hasTranslations)
 			{
 				error = string.Empty;
 				return true;
@@ -152,6 +186,9 @@ namespace mdbook
 						continue;
 
 					var key = fields[0];
+					if (string.IsNullOrWhiteSpace(key))
+						continue;
+
 					if (alreadyParsedKeys.Contains(key))
 					{
 						error = $"Translation row {row} (key {key}) is a duplicate, that key already exists";

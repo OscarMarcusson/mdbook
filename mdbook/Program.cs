@@ -262,7 +262,8 @@ namespace mdbook
 						// Normal text
 						else
 						{
-							builder.AppendLine($"<p>{ParseText(trimmed)}</p>");
+							if(Translations.ShouldInclude(trimmed, out trimmed))
+								builder.AppendLine($"<p>{ParseText(trimmed)}</p>");
 						}
 					}
 				}
