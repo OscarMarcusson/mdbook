@@ -340,7 +340,7 @@ namespace mdbook
 						else
 						{
 							output.Append("<i>");
-							output.Append(GetSection(text, ref i, "**"));
+							output.Append(GetSection(text, ref i, "*"));
 							output.Append("</i>");
 						}
 						break;
