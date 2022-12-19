@@ -49,7 +49,14 @@ namespace mdbook
 		{
 			if (!hasTranslations || currentTranslations == null)
 				return raw;
+			
+			// If we have only the given key as input we can just resolve as is
+			if(currentTranslations.TryGetValue(raw, out var translation))
+			{
+				return translation;
+			}
 
+			// Not found, so we may or may not have one or multiple keys within this text
 			foreach(var keyPair in currentTranslations)
 			{
 				var index = 0;
